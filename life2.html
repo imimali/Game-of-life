@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Game of life</title>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="1000" height="600" style="border:1px solid  black;left:0px;top:0px;margin:0px;"></canvas>
+    <button type="button" onclick="startGame()"> start</button>
+    <script>
+        window.onload = function () {
+            canv = document.getElementById("myCanvas");
+            rect = canv.getBoundingClientRect();
+            console.log('initially ' + rect.left + " - " + rect.top);
+            ctx = canv.getContext("2d");
+            cellSize = 10;
+            ctx.fillStyle = "blue";
+            neighbours = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+            rows = 1000 / cellSize;
+            columns = 600 / cellSize;
+            matr = createMatrix(rows, columns);
+            matr2 = createMatrix(rows, columns);
+
+
+
+        }
+        document.addEventListener('click', setCellAliveOnClick, true);
+
+
+
+        function setCellAliveOnClick(e) {
+            cursorX = e.pageX - rect.left;
+            cursorY = e.pageY - rect.top;
+
+            cellX = cursorX - cursorX % cellSize;
+            cellY = cursorY - cursorY % cellSize;
+            console.log(cursorX + " - " + cursorY + " vs " + cellX + " - " + cellY);
+            setCellAlive(cellX, cellY);
+            setMatrixCell(cellX, cellY, 1);
+
+        }
+        //cell stuff
+        function setCell(x, y, color, size) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, size, size);
+        }
+        function setCellAlive(x, y) {
+            setCell(x, y, 'blue', cellSize);
+        }
+        function setCellDead(x, y) {
+            setCell(x, y, 'white', cellSize);
+        }
+        //matrix stuff
+        function createMatrix(rows, columns) {
+            arr = [];
+            for (var i = 0; i < rows; i++) {
+                arr[i] = [];
+                for (var j = 0; j < columns; j++) {
+                    arr[i][j] = 0;
+                }
+            }
+            return arr;
+
+        }
+        function setMatrixCell(x, y, status) {
+            i = x / cellSize;
+            j = y / cellSize;
+           // console.log('setting ' + i + "-" + j);
+            matr[i][j] = status;
+        }
+        function getNumberOfAliveNeighbours(i, j) {
+            num = 0;
+            for (var k = 0; k < 8; k++) {
+                const x = adjustCoordinateFor(i + neighbours[k][0], rows);
+                const y = adjustCoordinateFor(j + neighbours[k][1], columns);
+                if (matr[x][y] == 1) {
+                    num++;
+                }
+            }
+            //console.log(i + "-" + j + " has " + num);
+            return num;
+        }
+        function adjustCoordinateFor(x, n) {
+            var res = x;
+            if (x < 0) {
+                res = 0;
+            }
+            if (x >= n) {
+                res = n - 1;
+            }
+            return res;
+        }
+        //game
+        function game() {
+            for (var i = 0; i < rows; i++) {
+                for (var j = 0; j < columns; j++) {
+                    const n = getNumberOfAliveNeighbours(i, j);
+                    if (matr[i][j] === 1) {
+                        matr2[i][j] = 1;
+                        if (n < 2 || n >= 4) {
+                            //setCellDead(i * cellSize, j * cellSize);
+                            matr2[i][j] = 0;
+                        }
+                    }
+                    else {
+                        matr2[i][j] = 0;
+                        if (n === 3) {
+                            matr2[i][j] = 1;
+                            //setCellAlive(i * cellSize, j * cellSize);
+                        }
+                    }
+                }
+            }
+            for (var i = 0; i < rows; i++) {
+                for (var j = 0; j < columns; j++) {
+                    if (matr2[i][j] === 1) {
+                        setCellAlive(i * cellSize, j * cellSize);
+                        matr[i][j]=1;
+                    }
+                    else if (matr2[i][j] === 0) {
+                        setCellDead(i * cellSize, j * cellSize);
+                        matr[i][j]=0;
+                    }
+                }
+            }
+        }
+        function startGame() {
+            setInterval(game, 150);
+        }
+
+    </script>
+
+</body>
+
+</html>
